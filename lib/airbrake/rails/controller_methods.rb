@@ -16,7 +16,7 @@ module Airbrake
       # This method should be used for sending manual notifications while you are still
       # inside the controller. Otherwise it works like Airbrake.notify.
       def notify_airbrake(hash_or_exception)
-        unless airbrake_local_request?
+        if !airbrake_local_request? || Airbrake.configuration.notify_on_local_exceptions
           Airbrake.notify(hash_or_exception, airbrake_request_data)
         end
       end

@@ -8,7 +8,8 @@ module Airbrake
         :ignore_user_agent, :notifier_name, :notifier_url, :notifier_version,
         :params_filters, :project_root, :port, :protocol, :proxy_host,
         :proxy_pass, :proxy_port, :proxy_user, :secure, :use_system_ssl_cert_chain, 
-        :framework, :user_information, :rescue_rake_exceptions].freeze
+        :framework, :user_information, :rescue_rake_exceptions,
+        :notify_on_local_exceptions].freeze
 
     # The API key for your project, found on the project edit form.
     attr_accessor :api_key
@@ -23,7 +24,7 @@ module Airbrake
     # +true+ for https connections, +false+ for http connections.
     attr_accessor :secure
     
-    # +true+ to use whatever CAs OpenSSL has installed on your system. +false+ to use the ca-bundle.crt file included in Airbrake itself (reccomended and default)
+    # +true+ to use whatever CAs OpenSSL has installed on your system. +false+ to use the ca-bundle.crt file included in Airbrake itself (recommended and default)
     attr_accessor :use_system_ssl_cert_chain
 
     # The HTTP open timeout in seconds (defaults to 2).
@@ -94,6 +95,9 @@ module Airbrake
     # (boolean or nil; set to nil to catch exceptions when rake isn't running from a terminal; default is nil)
     attr_accessor :rescue_rake_exceptions
 
+    # +true+ if you want to be notified on errors from local requests, +false+ otherwise. (default is false)
+    attr_accessor :notify_on_local_exceptions
+
     DEFAULT_PARAMS_FILTERS = %w(password password_confirmation).freeze
 
     DEFAULT_BACKTRACE_FILTERS = [
@@ -127,24 +131,25 @@ module Airbrake
     alias_method :use_system_ssl_cert_chain?, :use_system_ssl_cert_chain
 
     def initialize
-      @secure                   = false
-      @use_system_ssl_cert_chain= false
-      @host                     = 'airbrake.io'
-      @http_open_timeout        = 2
-      @http_read_timeout        = 5
-      @params_filters           = DEFAULT_PARAMS_FILTERS.dup
-      @backtrace_filters        = DEFAULT_BACKTRACE_FILTERS.dup
-      @ignore_by_filters        = []
-      @ignore                   = IGNORE_DEFAULT.dup
-      @ignore_user_agent        = []
-      @development_environments = %w(development test cucumber)
-      @development_lookup       = true
-      @notifier_name            = 'Airbrake Notifier'
-      @notifier_version         = VERSION
-      @notifier_url             = 'http://airbrake.io'
-      @framework                = 'Standalone'
-      @user_information         = 'Airbrake Error {{error_id}}'
-      @rescue_rake_exceptions   = nil
+      @secure                     = false
+      @use_system_ssl_cert_chain  = false
+      @host                       = 'airbrake.io'
+      @http_open_timeout          = 2
+      @http_read_timeout          = 5
+      @params_filters             = DEFAULT_PARAMS_FILTERS.dup
+      @backtrace_filters          = DEFAULT_BACKTRACE_FILTERS.dup
+      @ignore_by_filters          = []
+      @ignore                     = IGNORE_DEFAULT.dup
+      @ignore_user_agent          = []
+      @development_environments   = %w(development test cucumber)
+      @development_lookup         = true
+      @notifier_name              = 'Airbrake Notifier'
+      @notifier_version           = VERSION
+      @notifier_url               = 'http://airbrake.io'
+      @framework                  = 'Standalone'
+      @user_information           = 'Airbrake Error {{error_id}}'
+      @rescue_rake_exceptions     = nil
+      @notify_on_local_exceptions = false
     end
 
     # Takes a block and adds it to the list of backtrace filters. When the filters
